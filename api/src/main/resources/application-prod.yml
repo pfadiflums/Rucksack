@@ -1,0 +1,12 @@
+spring:
+  docker:
+    compose:
+      enabled: false
+springdoc:
+  api-docs:
+    enabled: false
+management:
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
