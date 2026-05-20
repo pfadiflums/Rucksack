@@ -12,6 +12,24 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  security:
+    oauth2:
+      client:
+        registration:
+          hitobito:
+            client-id: ${HITOBITO_CLIENT_ID}
+            client-secret: ${HITOBITO_CLIENT_SECRET}
+            # Scopes provided by Hitobito: name (first/last name + nickname) and email
+            scope: name,email
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          hitobito:
+            authorization-uri: https://pbs.puzzle.ch/oauth/authorize
+            token-uri: https://pbs.puzzle.ch/oauth/token
+            user-info-uri: https://pbs.puzzle.ch/oauth/profile
+            user-name-attribute: email
+
 management:
   endpoints:
     web:
@@ -25,3 +43,11 @@ server:
   servlet:
     context-path: /api/v1
   forward-headers-strategy: framework
+
+app:
+  admin-email: ${APP_ADMIN_EMAIL}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  jwt:
+    # Min 32 random characters — generate with: openssl rand -base64 32
+    secret: ${JWT_SECRET}
+    expiration-seconds: ${JWT_EXPIRATION_SECONDS:86400}

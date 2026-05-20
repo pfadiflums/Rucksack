@@ -50,7 +50,7 @@ bin/
 .DS_Store
 
 ### DotEnv ###
-.env
+local.env
 local.env
 
 ### Encryption Keys ###
@@ -58,3 +58,5 @@ local.env
 
 ### Files ###
 /files/
+
+.claude/
