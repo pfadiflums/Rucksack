@@ -30,13 +30,15 @@ class AuthorizedUserRepositoryAdapter(
         id = id,
         email = email,
         pfadiName = pfadiName,
-        role = role
+        roles = roles.toSet(),
+        profilePhotoUrl = profilePhotoUrl
     )
 
     private fun AuthorizedUser.toEntity() = AuthorizedUserJpaEntity(
         id = id,
         email = email,
         pfadiName = pfadiName,
-        role = role
+        roles = roles.toMutableSet(),
+        profilePhotoUrl = profilePhotoUrl
     )
 }

@@ -10,17 +10,17 @@ class InviteUserUseCase(
     private val authorizedUserRepository: AuthorizedUserRepository
 ) {
 
-    fun invite(email: String, role: Role): AuthorizedUser {
+    fun invite(email: String, roles: Set<Role>): AuthorizedUser {
         if (authorizedUserRepository.existsByEmail(email)) {
             throw IllegalStateException("User '$email' is already invited")
         }
-        return authorizedUserRepository.save(AuthorizedUser(email = email, role = role))
+        return authorizedUserRepository.save(AuthorizedUser(email = email, roles = roles))
     }
 
-    fun updateRole(email: String, role: Role): AuthorizedUser {
+    fun setRoles(email: String, roles: Set<Role>): AuthorizedUser {
         val user = authorizedUserRepository.findByEmail(email)
             ?: throw NoSuchElementException("User '$email' not found")
-        return authorizedUserRepository.save(user.copy(role = role))
+        return authorizedUserRepository.save(user.copy(roles = roles))
     }
 
     fun listAll(): List<AuthorizedUser> = authorizedUserRepository.findAll()

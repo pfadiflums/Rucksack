@@ -22,13 +22,6 @@ class UserController(private val authorizedUserRepository: AuthorizedUserReposit
     fun getMe(@AuthenticationPrincipal jwt: Jwt): ResponseEntity<UserResponse> {
         val user = authorizedUserRepository.findByEmail(jwt.subject)
             ?: return ResponseEntity.notFound().build()
-        return ResponseEntity.ok(
-            UserResponse(
-                id = user.id,
-                email = user.email,
-                pfadiName = user.pfadiName,
-                role = user.role.name
-            )
-        )
+        return ResponseEntity.ok(user.toResponse())
     }
 }

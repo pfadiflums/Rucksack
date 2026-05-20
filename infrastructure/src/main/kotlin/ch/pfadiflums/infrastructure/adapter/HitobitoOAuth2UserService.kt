@@ -34,7 +34,7 @@ class HitobitoOAuth2UserService(
             authorizedUserRepository.save(user.copy(pfadiName = nickname))
         }
 
-        val authorities = listOf(SimpleGrantedAuthority(user.role.name))
+        val authorities = user.roles.map { SimpleGrantedAuthority(it.name) }
         return DefaultOAuth2User(authorities, oauth2User.attributes, "email")
     }
 }

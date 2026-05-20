@@ -1,5 +1,6 @@
 package ch.pfadiflums.api.security
 
+import ch.pfadiflums.domain.port.AuthorizedUserRepository
 import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component
 @Component
 class OAuth2LoginSuccessHandler(
     private val jwtService: JwtService,
+    private val authorizedUserRepository: AuthorizedUserRepository,
     @Value("\${app.frontend-url}") private val frontendUrl: String,
     @Value("\${app.jwt.expiration-seconds:86400}") private val expirationSeconds: Int
 ) : SimpleUrlAuthenticationSuccessHandler() {
@@ -25,7 +27,10 @@ class OAuth2LoginSuccessHandler(
         val email = oauth2User.getAttribute<String>("email")!!
         val roles = authentication.authorities.map { it.authority }
 
-        val token = jwtService.generateToken(email, roles)
+        val user = authorizedUserRepository.findByEmail(email)
+            ?: throw IllegalStateException("Authenticated user '$email' not found in database")
+
+        val token = jwtService.generateToken(email, roles, user.id!!)
 
         // HttpOnly cookie — not readable from JS, safe for web clients
         val cookie = Cookie("jwt", token).apply {

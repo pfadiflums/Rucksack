@@ -24,17 +24,17 @@ class AdminController(private val inviteUserUseCase: InviteUserUseCase) {
     @PostMapping("/invite")
     @Operation(summary = "Invite a new user by email")
     fun invite(@Valid @RequestBody request: InviteRequest): ResponseEntity<UserResponse> {
-        val user = inviteUserUseCase.invite(request.email, request.role)
+        val user = inviteUserUseCase.invite(request.email, request.roles)
         return ResponseEntity.status(HttpStatus.CREATED).body(user.toResponse())
     }
 
-    @PutMapping("/users/{email}/role")
-    @Operation(summary = "Change an existing user's role")
-    fun updateRole(
+    @PutMapping("/users/{email}/roles")
+    @Operation(summary = "Update an existing user's roles")
+    fun updateRoles(
         @PathVariable email: String,
         @Valid @RequestBody request: RoleUpdateRequest
     ): ResponseEntity<UserResponse> {
-        val user = inviteUserUseCase.updateRole(email, request.role)
+        val user = inviteUserUseCase.setRoles(email, request.roles)
         return ResponseEntity.ok(user.toResponse())
     }
 
@@ -46,21 +46,23 @@ class AdminController(private val inviteUserUseCase: InviteUserUseCase) {
 
 data class InviteRequest(
     @field:Email @field:NotBlank val email: String,
-    val role: Role = Role.ROLE_LEITER
+    val roles: Set<Role> = setOf(Role.ROLE_LEITER)
 )
 
-data class RoleUpdateRequest(val role: Role)
+data class RoleUpdateRequest(val roles: Set<Role>)
 
 data class UserResponse(
     val id: Long?,
     val email: String,
     val pfadiName: String?,
-    val role: String
+    val roles: List<String>,
+    val profilePhotoUrl: String?
 )
 
-private fun AuthorizedUser.toResponse() = UserResponse(
+fun AuthorizedUser.toResponse() = UserResponse(
     id = id,
     email = email,
     pfadiName = pfadiName,
-    role = role.name
+    roles = roles.map { it.name },
+    profilePhotoUrl = profilePhotoUrl
 )

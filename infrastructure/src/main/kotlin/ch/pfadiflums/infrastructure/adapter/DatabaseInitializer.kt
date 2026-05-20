@@ -20,7 +20,7 @@ class DatabaseInitializer(
     override fun run(args: ApplicationArguments) {
         if (authorizedUserRepository.count() == 0L) {
             authorizedUserRepository.save(
-                AuthorizedUser(email = adminEmail, role = Role.ROLE_ADMIN)
+                AuthorizedUser(email = adminEmail, roles = mutableSetOf(Role.ROLE_ADMIN))
             )
             log.info("Bootstrapped initial admin account for '{}'", adminEmail)
         }

@@ -4,5 +4,6 @@ data class AuthorizedUser(
     val id: Long? = null,
     val email: String,
     val pfadiName: String? = null,
-    val role: Role
+    val roles: Set<Role>,
+    val profilePhotoUrl: String? = null
 )

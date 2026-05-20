@@ -11,6 +11,8 @@ springdoc:
     path: /docs
   swagger-ui:
     path: /docs/swagger
+    persist-authorization: true
+    display-request-duration: true
 management:
   endpoint:
     health:

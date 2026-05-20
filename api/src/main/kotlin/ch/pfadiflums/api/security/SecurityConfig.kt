@@ -5,6 +5,11 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
@@ -14,6 +19,9 @@ import org.springframework.security.oauth2.jwt.JwtDecoder
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 @EnableWebSecurity
@@ -28,10 +36,11 @@ class SecurityConfig(
     fun securityFilterChain(http: HttpSecurity, jwtDecoder: JwtDecoder): SecurityFilterChain {
         return http
             .csrf { it.disable() }
+            .cors { it.configurationSource(corsConfigurationSource()) }
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) }
             .authorizeHttpRequests { auth ->
+                auth.requestMatchers(HttpMethod.GET, "/stufen/**").permitAll()
                 auth.requestMatchers("/docs/**", "/actuator/health").permitAll()
-                auth.requestMatchers("/admin/**").hasRole("ADMIN")
                 auth.anyRequest().authenticated()
             }
             .exceptionHandling { ex ->
@@ -66,6 +75,17 @@ class SecurityConfig(
         }
     }
 
+    @Bean
+    fun roleHierarchy(): RoleHierarchy = RoleHierarchyImpl.withDefaultRolePrefix()
+        .role("ADMIN").implies("ABTEILUNGSLEITER")
+        .role("ABTEILUNGSLEITER").implies("STUFENLEITER")
+        .role("STUFENLEITER").implies("LEITER")
+        .build()
+
+    @Bean
+    fun methodSecurityExpressionHandler(roleHierarchy: RoleHierarchy): MethodSecurityExpressionHandler =
+        DefaultMethodSecurityExpressionHandler().apply { setRoleHierarchy(roleHierarchy) }
+
     // Resolves JWT from the Authorization: Bearer header, with HttpOnly cookie fallback
     @Bean
     fun bearerTokenResolver(): BearerTokenResolver = BearerTokenResolver { request ->
@@ -74,5 +94,18 @@ class SecurityConfig(
             return@BearerTokenResolver header.substring(7)
         }
         request.cookies?.find { it.name == "jwt" }?.value
+    }
+
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val config = CorsConfiguration().apply {
+            allowedOrigins = listOf(frontendUrl, "http://localhost:8080")
+            allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+            allowedHeaders = listOf("*")
+            allowCredentials = true
+        }
+        return UrlBasedCorsConfigurationSource().apply {
+            registerCorsConfiguration("/**", config)
+        }
     }
 }

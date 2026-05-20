@@ -1,7 +1,10 @@
 package ch.pfadiflums.api
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.info.Info
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
+import io.swagger.v3.oas.annotations.security.SecurityScheme
 import io.swagger.v3.oas.annotations.servers.Server
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.domain.EntityScan
@@ -25,7 +28,18 @@ import org.springframework.scheduling.annotation.EnableScheduling
         version = "1.0",
         description = "Backend API für die Website der Pfadi St. Justus Flums"
     ),
-    servers = [Server(url = "https://api.pfadiflums.ch/api/v1", description = "Production"), Server(url = "/api/v1", description = "Current instance")]
+    servers = [
+        Server(url = "/api/v1", description = "Current instance"),
+        Server(url = "https://api.pfadiflums.ch/api/v1", description = "Production"),
+    ],
+    security = [SecurityRequirement(name = "bearerAuth")]
+)
+@SecurityScheme(
+    name = "bearerAuth",
+    type = SecuritySchemeType.HTTP,
+    scheme = "bearer",
+    bearerFormat = "JWT",
+    description = "Paste the JWT token from the /auth/callback redirect. Log in first at /api/v1/oauth2/authorization/hitobito"
 )
 @EnableScheduling
 @EnableAsync

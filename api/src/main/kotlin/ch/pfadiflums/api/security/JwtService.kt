@@ -15,7 +15,7 @@ class JwtService(
     @Value("\${app.jwt.expiration-seconds:86400}") private val expirationSeconds: Long
 ) {
 
-    fun generateToken(email: String, roles: List<String>): String {
+    fun generateToken(email: String, roles: List<String>, userId: Long): String {
         val now = Instant.now()
         val header = JwsHeader.with(MacAlgorithm.HS256).build()
         val claims = JwtClaimsSet.builder()
@@ -24,6 +24,7 @@ class JwtService(
             .issuedAt(now)
             .expiresAt(now.plusSeconds(expirationSeconds))
             .claim("roles", roles)
+            .claim("userId", userId)
             .build()
         return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).tokenValue
     }
